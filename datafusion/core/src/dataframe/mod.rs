@@ -71,6 +71,7 @@ use datafusion_functions_aggregate::expr_fn::{
 use async_trait::async_trait;
 use datafusion_catalog::Session;
 use datafusion_sql::TableReference;
+use tracing::instrument;
 
 /// Contains options that control how data is
 /// written out from a DataFrame
@@ -274,6 +275,7 @@ impl DataFrame {
     }
 
     /// Consume the DataFrame and produce a physical plan
+    #[tracing::instrument(skip(self))]
     pub async fn create_physical_plan(self) -> Result<Arc<dyn ExecutionPlan>> {
         self.session_state.create_physical_plan(&self.plan).await
     }
@@ -1480,6 +1482,7 @@ impl DataFrame {
     ///
     /// Dropping the stream will abort the execution of the query, and free up
     /// any allocated resources
+    #[tracing::instrument(skip(self))]
     pub async fn execute_stream(self) -> Result<SendableRecordBatchStream> {
         let task_ctx = Arc::new(self.task_ctx());
         let plan = self.create_physical_plan().await?;
